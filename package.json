@@ -1,0 +1,59 @@
+{
+  "name": "naijahacks-alerthy",
+  "version": "1.0.0",
+  "description": "An app that hacks Citizen Safety in Nigeria",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "nodemon --exec babel-node ./src/index.js",
+    "migration": "./node_modules/.bin/sequelize db:migrate",
+    "migration:rollback": "./node_modules/.bin/sequelize db:migrate:undo:all",
+    "migration:refresh": "npm run migration:rollback && npm run migration",
+    "db:seed": "./node_modules/.bin/sequelize db:seed:all",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sircatalyst/NaijaHacks-Alerthy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sircatalyst/NaijaHacks-Alerthy/issues"
+  },
+  "homepage": "https://github.com/sircatalyst/NaijaHacks-Alerthy#readme",
+  "dependencies": {
+    "@babel/runtime": "7.7.4",
+    "body-parser": "1.19.0",
+    "cors": "2.8.5",
+    "dotenv": "8.2.0",
+    "express": "4.17.1",
+    "morgan": "1.9.1",
+    "mysql2": "2.0.1",
+    "sequelize": "5.21.2",
+    "sequelize-cli": "5.5.1",
+    "swagger-ui-express": "4.1.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.7.4",
+    "@babel/core": "7.7.4",
+    "@babel/node": "7.7.4",
+    "@babel/plugin-proposal-object-rest-spread": "7.7.4",
+    "@babel/plugin-transform-runtime": "7.7.4",
+    "@babel/preset-env": "7.7.4",
+    "@babel/register": "7.7.4",
+    "babel-loader": "8.0.6",
+    "jest": "24.9.0",
+    "nodemon": "2.0.1",
+    "supertest": "4.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  }
+}
