@@ -27,7 +27,7 @@ const AlertController = {
     }
     const reqId = shortid.generate();
     const logData = JSON.stringify({ ...req.body, ...req.user.dataValues });
-    const { message, recipient_phone, recipient_email, subject, first_name, last_name } = req.body;
+    const { message, recipient_phone, recipient_email, subject, first_name, last_name, trigger_interval } = req.body;
     log.info(
       `Alert Controller - CREATE - Request ID: ${reqId} - Started the process of creating an alert - ${logData}`
     );
@@ -40,7 +40,9 @@ const AlertController = {
       recipient_email: recipient_email.toString(),
       subject: subject,
       user_id: req.user.dataValues.id,
-      test_send: 1
+      test_send: 1,
+      trigger_job: 0,
+      trigger_interval
     })
       .then(alert => {
         log.info(
@@ -378,6 +380,7 @@ const AlertController = {
         models.Alert.update(
           {
             location,
+            trigger_job: 1,
             trigger_time: new Date().toLocaleString()
           },
           { where: { id, user_id: req.user.dataValues.id } }
@@ -514,7 +517,69 @@ const AlertController = {
           message: error.message
         });
       });
-  }
+  },
+
+
+  /**
+   * @description Stop a user's alert
+   * @access private
+   * @param {Object} req - request
+   * @param {Object} res - response
+   * @returns status code & message
+   */
+  stopAlert(req, res) {
+    const reqId = shortid.generate();
+    const logData = JSON.stringify({ ...req.body,  ...req.user.dataValues });
+    log.info(
+      `ALERT Controller - STOP - Request ID: ${reqId} - Started the process of stopping a user's alert - ${logData}`
+    );
+    models.Alert.update(
+      {
+       trigger_job: 0
+      },
+      { where: { user_id: req.user.dataValues.id } }
+    )
+      .then(result => {
+        if (result[0] === 0) {
+          const message = 'No such alert';
+          log.error(
+            `Alert Controller - STOP - Request ID: ${reqId} - Error in updating a user's single alert - ${message} - ${logData}`
+          );
+          return res.status(400).json({
+            error: 'Bad Request',
+            message: message
+          });
+        }
+        log.info(
+          `ALERT Controller - STOP - Request ID: ${reqId} - SUCCESSFULLY updated a single user's alert - ${logData}`
+        );
+        models.Alert.findAll({ where: { user_id: req.user.dataValues.id } })
+          .then(alert => {
+            return res.status(200).json({
+              status: 'success',
+              user: alert
+            });
+          })
+          .catch(error => {
+            log.error(
+              `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
+            );
+            return res.status(500).json({
+              error: 'Internal Server Error',
+              message: error.message
+            });
+          });
+      })
+      .catch(error => {
+        log.error(
+          `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
+        );
+        return res.status(500).json({
+          error: 'Internal Server Error',
+          message: error.message
+        });
+      });
+  },
 };
 
 module.exports = AlertController;

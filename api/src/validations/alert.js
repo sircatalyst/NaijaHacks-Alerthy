@@ -23,7 +23,12 @@ const schema = {
           .required()
       )
       .required(),
-    subject: Joi.string().required()
+    subject: Joi.string().required(),
+    trigger_interval: Joi.number()
+      .integer()
+      .positive()
+      .required() //in minutes
+      .error(new Error('trigger_interval must be a positive number in minutes'))
   }),
 
   get: Joi.object({
@@ -45,9 +50,14 @@ const schema = {
           .email()
           .required()
       ),
-      subject: Joi.string()
+      subject: Joi.string(),
+      trigger_interval: Joi.number()
+      .integer()
+      .positive()
+      .required() //in minutes
+      .error(new Error('trigger_interval must be a positive number in minutes'))
     })
-    .or('first_name', 'last_name', 'message', 'recipient_phone', 'recipient_email', 'subject'),
+    .or('first_name', 'last_name', 'message', 'recipient_phone', 'recipient_email', 'subject', 'trigger_interval'),
 
   sendUpdate: Joi.object({
     location: Joi.string()

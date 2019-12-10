@@ -17,6 +17,8 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), AlertCon
 
 router.patch('/send/:id', passport.authenticate('jwt', { session: false }), AlertController.send);
 
+router.patch('/stop', passport.authenticate('jwt', { session: false }), AlertController.stopAlert);
+
 router.patch(
   '/test/send/:id',
   passport.authenticate('jwt', { session: false }),
