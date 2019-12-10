@@ -10,6 +10,9 @@ import swaggerDocument from './docs/swagger';
 
 // routes
 import authRoute from './routes/authRoute';
+import userRoute from './routes/userRoute';
+import alertRoute from './routes/alertRoute';
+import adminRoute from './routes/adminRoute';
 
 // initialize express
 const app = express();
@@ -43,6 +46,9 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 const prefix = '/api/v1';
 
 app.use(`${prefix}/`, authRoute);
+app.use(`${prefix}/users`, userRoute);
+app.use(`${prefix}/alerts`, alertRoute);
+app.use(`${prefix}/ghost`, adminRoute);
 
 // handles non-existing routes
 app.all('*', (req, res) => res.status(404).json({ error: 'route not found' }));

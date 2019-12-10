@@ -14,7 +14,8 @@ sequelize
   });
 
 const models = {
-  User: sequelize.import('./models/user.js')
+  User: sequelize.import('./models/user.js'),
+  Alert: sequelize.import('./models/alert.js')
 };
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

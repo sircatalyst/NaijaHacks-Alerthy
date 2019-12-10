@@ -224,7 +224,18 @@ const AuthController = {
               );
               const receiver = email;
               const message = `api/v1/verify/reset=${resetCode}`;
-              Email.forgetPassword(receiver, message, reqId, logData, res);
+              const subject = `ALERTHY: You forgot your password`;
+              Email.send(receiver, message, subject, reqId, logData);
+            })
+            .then(() => {
+              const message = 'Password changed successfully';
+              log.info(
+                `Auth Controller - FORGET PASSWORD - Request ID: ${reqId} - Successfully email reset code to user  - ${logData}`
+              );
+              return res.status(200).json({
+                status: 'success',
+                message: message
+              });
             })
             .catch(error => {
               log.error(
@@ -241,7 +252,7 @@ const AuthController = {
         log.error(
           `Auth Controller - FORGET PASSWORD - Request ID: ${reqId} - Error: ${error.message} - ${logData}`
         );
-        return res.status(503).json({
+        return res.status(500).json({
           status: 'Internal Error',
           message: error.message
         });
