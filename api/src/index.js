@@ -15,6 +15,8 @@ sequelize
 
 const models = {
   User: sequelize.import('./models/user.js'),
+  Recipient: sequelize.import('./models/recipient.js'),
+  Message: sequelize.import('./models/message.js'),
   Alert: sequelize.import('./models/alert.js')
 };
 
