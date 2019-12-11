@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
     return sequelize.define(
-      'Alert',
+      'Message',
       {
         id: {
           type: DataTypes.INTEGER(11),
@@ -8,25 +8,17 @@ export default (sequelize, DataTypes) => {
           primaryKey: true,
           autoIncrement: true
         },
-        test_send: {
-          type: DataTypes.INTEGER(11),
+        message: {
+          type: DataTypes.TEXT(),
           allowNull: false
         },
-        location: {
+        subject: {
           type: DataTypes.STRING(255),
-          allowNull: true
-        },
-        trigger_time: {
-          type: DataTypes.STRING(255),
-          allowNull: true
-        },
-        trigger_interval: {
-          type: DataTypes.INTEGER(11),
           allowNull: false
         },
-        trigger_job: {
+        is_main: {
           type: DataTypes.INTEGER(11),
-          allowNull: true
+          allowNull: false
         },
         user_id: {
           type: DataTypes.INTEGER(11),
@@ -37,7 +29,7 @@ export default (sequelize, DataTypes) => {
         }
       },
       {
-        tableName: 'Alerts'
+        tableName: 'Messages'
       }
     );
   };

@@ -2,9 +2,11 @@ import Joi from '@hapi/joi';
 
 const schema = {
   create: Joi.object({
-    trigger_interval: Joi.number()
-      .integer()
-      .positive()
+    message: Joi.string()
+      .min(2)
+      .required(),
+    subject: Joi.string()
+      .min(2)
       .required()
   }),
 
@@ -18,16 +20,10 @@ const schema = {
 
   update: Joi.object()
     .keys({
-      trigger_interval: Joi.number()
-        .integer()
-        .positive()
-        .required()
+      message: Joi.string().min(2),
+      subject: Joi.string().min(2)
     })
-    .or('trigger_interval'),
-
-  sendUpdate: Joi.object({
-    location: Joi.string()
-  })
+    .or('message', 'subject')
 };
 
 module.exports = schema;

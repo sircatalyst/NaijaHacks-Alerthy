@@ -13,8 +13,10 @@ import schema from '../validations/alert';
 import validate from '../validations';
 
 const AlertController = {
+
+  
   /**
-   * @description Alert user's selected recipients
+   * @description Set trigger interval
    * @access private
    * @param {Object} req - request
    * @param {Object} res - response
@@ -27,22 +29,16 @@ const AlertController = {
     }
     const reqId = shortid.generate();
     const logData = JSON.stringify({ ...req.body, ...req.user.dataValues });
-    const { message, recipient_phone, recipient_email, subject, first_name, last_name, trigger_interval } = req.body;
+    const { trigger_interval } = req.body;
     log.info(
       `Alert Controller - CREATE - Request ID: ${reqId} - Started the process of creating an alert - ${logData}`
     );
 
     models.Alert.create({
-      first_name,
-      last_name,
-      message: message,
-      recipient_phone: recipient_phone.toString(),
-      recipient_email: recipient_email.toString(),
-      subject: subject,
-      user_id: req.user.dataValues.id,
       test_send: 1,
       trigger_job: 0,
-      trigger_interval
+      trigger_interval,
+      user_id: req.user.dataValues.id
     })
       .then(alert => {
         log.info(
@@ -63,6 +59,7 @@ const AlertController = {
         });
       });
   },
+
 
   /**
    * @description Get an alert of a user
@@ -92,7 +89,8 @@ const AlertController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         log.info(
@@ -136,7 +134,8 @@ const AlertController = {
           log.info(`ALERT Controller - LIST - Request ID: ${reqId} - Got no alert - ${logData}`);
           return res.status(200).json({
             status: 'success',
-            data: message
+            message,
+            data: []
           });
         }
         log.info(
@@ -186,15 +185,20 @@ const AlertController = {
           );
           return res.status(200).json({
             status: 'success',
-            data: message
+            message,
+            data: []
           });
         }
         log.info(
           `ALERT Controller - LIST ALL ALERTS  - Request ID: ${reqId} - SUCCESSFULLY list of all users' alert messages - ${logData}`
         );
+        const total = alert.length;
         return res.status(200).json({
           status: 'success',
-          data: alert
+          data: {
+            total: total,
+            alert
+          }
         });
       })
       .catch(error => {
@@ -223,19 +227,14 @@ const AlertController = {
     }
     const reqId = shortid.generate();
     const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
-    const { first_name, last_name, message, recipient_phone, recipient_email, subject } = req.body;
+    const { trigger_interval } = req.body;
     const { id } = req.params;
     log.info(
       `ALERT Controller - UPDATE - Request ID: ${reqId} - Started the process of updating a user's single alert - ${logData}`
     );
     models.Alert.update(
       {
-        first_name,
-        last_name,
-        message,
-        recipient_phone: recipient_phone.toString(),
-        recipient_email: recipient_email.toString(),
-        subject
+        trigger_interval
       },
       { where: { id, user_id: req.user.dataValues.id } }
     )
@@ -247,7 +246,8 @@ const AlertController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         log.info(
@@ -309,7 +309,8 @@ const AlertController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         models.Alert.destroy({ where: { id, user_id: req.user.dataValues.id } })
@@ -361,20 +362,37 @@ const AlertController = {
     const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
     const { location } = req.body;
     const { id } = req.params;
-
     log.info(
       `ALERT Controller - SEND - Request ID: ${reqId} - Started the process of sending a user's alert- ${logData}`
     );
-    models.Alert.findOne({ where: { id, user_id: req.user.dataValues.id } })
-      .then(alert => {
-        if (!alert) {
-          const message = 'No such alert';
+    let recipientArray;
+    models.Recipient.findAll({ where: { user_id: req.user.dataValues.id } })
+    .then((recipient) => {
+      if (!recipient) {
+        const message = 'You have no recipient';
+        log.error(
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: message,
+          data: []
+        });
+      }
+      recipientArray = recipient;
+    })
+    .then((recipient) => {
+      models.Message.findOne({ where: { user_id: req.user.dataValues.id, id, is_main: 0 } })
+      .then(msg => {
+        if (!msg) {
+          const message = 'No such alert message';
           log.error(
             `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message,
+            data: []
           });
         }
         models.Alert.update(
@@ -385,41 +403,47 @@ const AlertController = {
           },
           { where: { id, user_id: req.user.dataValues.id } }
         )
-          .then(() => {
-            log.info(
-              `ALERT Controller - SEND - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
-            );
-            const subject = `ALERTHY EMERGENCY: ${alert.subject}`;
-            const recipientPhoneArray = alert.recipient_phone.split(',');
-            const message = `${
-              alert.message
-            } sent from ${location} at ${new Date().toLocaleString()}`;
-            //send sms
-            for (let i = 0; i < recipientPhoneArray.length; i++) {
-              Sms.send(recipientPhoneArray[i], message, reqId, logData);
+        .then(() => {
+          log.info(
+            `ALERT Controller - SEND - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
+          );
+
+          //START PREPARING TO SEND MESSAGE
+          const subject = `ALERTHY EMERGENCY: ${msg.subject}`;
+          const message = `${msg.message} sent from ${location} at ${new Date().toLocaleString()}`;
+          
+          //SEND SMS MESSAGE
+          for (let i = 0; i < recipientArray.length; i++) {
+            const recipientPhoneArray = recipientArray[i].recipient_phone;
+            const recipientEmailArray = recipientArray[i].recipient_email;
+          
+          //SEND EMAIL MESSAGE
+            Email.send(recipientEmailArray.split(','), message, subject, reqId, logData);
+          
+            for (let index = 0; index < recipientPhoneArray.length; index++) {
+              Sms.send(recipientPhoneArray[index], message, reqId, logData);
             }
-            //send emails
-            Email.send(alert.recipient_email.split(','), message, subject, reqId, logData);
-          })
-          .then(() => {
-            const message = 'Alert sent successfully';
-            log.error(
-              `ALERT Controller - SEND - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
-            );
-            return res.status(200).json({
-              status: 'success',
-              message: message
-            });
-          })
-          .catch(error => {
-            log.error(
-              `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
-            );
-            return res.status(500).json({
-              error: 'Internal Server Error',
-              message: error.message
-            });
+          }
+        })
+        .then(() => {
+          const message = 'Alert sent successfully';
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
+          );
+          return res.status(200).json({
+            status: 'success',
+            message: message
           });
+        })
+        .catch(error => {
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+          );
+          return res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+          });
+        });
       })
       .catch(error => {
         log.error(
@@ -430,6 +454,16 @@ const AlertController = {
           message: error.message
         });
       });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    });
   },
 
   /**
@@ -449,20 +483,37 @@ const AlertController = {
     const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
     const { location } = req.body;
     const { id } = req.params;
-
     log.info(
-      `ALERT Controller - SEND TEST - Request ID: ${reqId} - Started the process of sending a user's alert- ${logData}`
+      `ALERT Controller - SEND - Request ID: ${reqId} - Started the process of sending a user's alert- ${logData}`
     );
-    models.Alert.findOne({ where: { id, user_id: req.user.dataValues.id, test_send: 1 } })
-      .then(alert => {
-        if (!alert) {
-          const message = 'No such alert';
+    let recipientArray;
+    models.Recipient.findAll({ where: { user_id: req.user.dataValues.id } })
+    .then((recipient) => {
+      if (!recipient) {
+        const message = 'You have no recipient';
+        log.error(
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message,
+          data: []
+        });
+      }
+      recipientArray = recipient;
+    })
+    .then((recipient) => {
+      models.Message.findOne({ where: { user_id: req.user.dataValues.id, id, is_main: 0 } })
+      .then(msg => {
+        if (!msg) {
+          const message = 'No such alert message';
           log.error(
-            `ALERT Controller - SEND TEST - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message,
+            data: []
           });
         }
         models.Alert.update(
@@ -470,53 +521,69 @@ const AlertController = {
             location,
             trigger_time: new Date().toLocaleString()
           },
-          { where: { id, user_id: req.user.dataValues.id } }
+          { where: { id, user_id: req.user.dataValues.id, test_send: 1 } }
         )
-          .then(() => {
-            log.info(
-              `ALERT Controller - SEND TEST - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
-            );
-            const subject = `TEST ALERTHY EMERGENCY : ${alert.subject}`;
-            const recipientPhoneArray = alert.recipient_phone.split(',');
-            const message = `This is TEST: ${
-              alert.message
-            } sent from ${location} at ${new Date().toLocaleString()}`;
-            //send sms
-            for (let i = 0; i < recipientPhoneArray.length; i++) {
-              Sms.send(recipientPhoneArray[i], message, reqId, logData);
+        .then(() => {
+          log.info(
+            `ALERT Controller - SEND - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
+          );
+
+          //START PREPARING TO SEND MESSAGE
+          const subject = `ALERTHY EMERGENCY TEST: ${msg.subject}`;
+          const message = `${msg.message} sent from ${location} at ${new Date().toLocaleString()}`;
+          
+           //SEND SMS MESSAGE
+           for (let i = 0; i < recipientArray.length; i++) {
+            const recipientPhoneArray = recipientArray[i].recipient_phone;
+            const recipientEmailArray = recipientArray[i].recipient_email;
+          
+            //SEND EMAIL MESSAGE
+            Email.send(recipientEmailArray.split(','), message, subject, reqId, logData);
+          
+            for (let index = 0; index < recipientPhoneArray.length; index++) {
+              Sms.send(recipientPhoneArray[index], message, reqId, logData);
             }
-            //send emails
-            Email.send(alert.recipient_email.split(','), message, subject, reqId, logData);
-          })
-          .then(() => {
-            const message = 'Alert sent successfully';
-            log.error(
-              `ALERT Controller - SEND TEST - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
-            );
-            return res.status(200).json({
-              status: 'success',
-              message: message
-            });
-          })
-          .catch(error => {
-            log.error(
-              `ALERT Controller - SEND TEST - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
-            );
-            return res.status(500).json({
-              error: 'Internal Server Error',
-              message: error.message
-            });
+          }
+        })
+        .then(() => {
+          const message = 'Alert sent successfully';
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
+          );
+          return res.status(200).json({
+            status: 'success',
+            message: message
           });
+        })
+        .catch(error => {
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+          );
+          return res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+          });
+        });
       })
       .catch(error => {
         log.error(
-          `ALERT Controller - SEND TEST - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
         );
         return res.status(500).json({
           error: 'Internal Server Error',
           message: error.message
         });
       });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    });
   },
 
 
@@ -528,8 +595,14 @@ const AlertController = {
    * @returns status code & message
    */
   stopAlert(req, res) {
+    const handleValidateParams = validate.params(req, res, schema.get);
+    if (handleValidateParams.statusCode === 422) {
+      return handleValidate;
+    }
     const reqId = shortid.generate();
-    const logData = JSON.stringify({ ...req.body,  ...req.user.dataValues });
+    const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
+    const { id } = req.params;
+
     log.info(
       `ALERT Controller - STOP - Request ID: ${reqId} - Started the process of stopping a user's alert - ${logData}`
     );
@@ -537,49 +610,334 @@ const AlertController = {
       {
        trigger_job: 0
       },
-      { where: { user_id: req.user.dataValues.id } }
+      { where: { user_id: req.user.dataValues.id, id } }
     )
-      .then(result => {
-        if (result[0] === 0) {
-          const message = 'No such alert';
+    .then(result => {
+      if (result[0] === 0) {
+        const message = 'No such alert';
+        log.error(
+          `Alert Controller - STOP - Request ID: ${reqId} - Error in updating a user's single alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message,
+          data: []
+        });
+      }
+      const message = 'Alert Stopped';
+      log.info(
+        `ALERT Controller - STOP - Request ID: ${reqId} - SUCCESSFULLY updated a single user's alert - ${logData}`
+      );
+      return res.status(200).json({
+        status: 'success',
+        user: message
+      });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    })
+  },
+
+
+  /**
+   * @description Send MAIN alert of a user
+   * @access private
+   * @param {Object} req - request
+   * @param {Object} res - response
+   * @returns status code & message
+   */
+  sendMain(req, res) {
+    const handleValidate = validate.body(req, res, schema.sendUpdate);
+    if (handleValidate.statusCode === 422) {
+      return handleValidate;
+    }
+    const reqId = shortid.generate();
+    const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
+    const { location } = req.body;
+    log.info(
+      `ALERT Controller - SEND - Request ID: ${reqId} - Started the process of sending a user's alert- ${logData}`
+    );
+    let recipientArray;
+    models.Recipient.findAll({ where: { user_id: req.user.dataValues.id } })
+    .then((recipient) => {
+      if (!recipient) {
+        const message = 'You have no recipient';
+        log.error(
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: message,
+          data: []
+        });
+      }
+      recipientArray = recipient;
+    })
+    .then((recipient) => {
+      models.Message.findOne({ where: { user_id: req.user.dataValues.id, is_main: 1 } })
+      .then(msg => {
+        if (!msg) {
+          const message = 'No such alert message';
           log.error(
-            `Alert Controller - STOP - Request ID: ${reqId} - Error in updating a user's single alert - ${message} - ${logData}`
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
-        log.info(
-          `ALERT Controller - STOP - Request ID: ${reqId} - SUCCESSFULLY updated a single user's alert - ${logData}`
-        );
-        models.Alert.findAll({ where: { user_id: req.user.dataValues.id } })
-          .then(alert => {
-            return res.status(200).json({
-              status: 'success',
-              user: alert
-            });
-          })
-          .catch(error => {
-            log.error(
-              `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
-            );
-            return res.status(500).json({
-              error: 'Internal Server Error',
-              message: error.message
-            });
+        models.Alert.update(
+          {
+            location,
+            trigger_job: 1,
+            trigger_time: new Date().toLocaleString()
+          },
+          { where: { user_id: req.user.dataValues.id } }
+        )
+        .then(() => {
+          log.info(
+            `ALERT Controller - SEND - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
+          );
+
+          //START PREPARING TO SEND MESSAGE
+          const subject = `ALERTHY EMERGENCY: ${msg.subject}`;
+          const message = `${msg.message} sent from ${location} at ${new Date().toLocaleString()}`;
+
+          //SEND SMS MESSAGE
+          for (let i = 0; i < recipientArray.length; i++) {
+            const recipientPhoneArray = recipientArray[i].recipient_phone.split(',');
+            
+            //SEND EMAIL MESSAGE
+            Email.send(recipientArray[i].recipient_email.split(','), message, subject, reqId, logData);
+            
+            for (let index = 0; index < recipientPhoneArray.length; index++) {
+              Sms.send(recipientPhoneArray[index], message, reqId, logData);
+            }
+          }
+        })
+        .then(() => {
+          const message = 'Alert sent successfully';
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
+          );
+          return res.status(200).json({
+            status: 'success',
+            message: message
           });
+        })
+        .catch(error => {
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+          );
+          return res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+          });
+        });
       })
       .catch(error => {
         log.error(
-          `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
         );
         return res.status(500).json({
           error: 'Internal Server Error',
           message: error.message
         });
       });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    });
   },
+
+
+    /**
+   * @description TEST Send MAIN an alert of a user
+   * @access private
+   * @param {Object} req - request
+   * @param {Object} res - response
+   * @returns status code & message
+   */
+  sendMainTest(req, res) {
+    const handleValidate = validate.body(req, res, schema.sendUpdate);
+    if (handleValidate.statusCode === 422) {
+      return handleValidate;
+    }
+    const reqId = shortid.generate();
+    const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
+    const { location } = req.body;
+    log.info(
+      `ALERT Controller - SEND - Request ID: ${reqId} - Started the process of sending a user's alert- ${logData}`
+    );
+    let recipientArray;
+    models.Recipient.findAll({ where: { user_id: req.user.dataValues.id } })
+    .then((recipient) => {
+      if (!recipient) {
+        const message = 'You have no recipient';
+        log.error(
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: message,
+          data: []
+        });
+      }
+      recipientArray = recipient;
+    })
+    .then((recipient) => {
+      models.Message.findOne({ where: { user_id: req.user.dataValues.id, is_main: 1 } })
+      .then(msg => {
+        if (!msg) {
+          const message = 'No such alert message';
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in get a single user's alert - ${message} - ${logData}`
+          );
+          return res.status(400).json({
+            error: 'Bad Request',
+            message: message,
+            data: []
+          });
+        }
+        models.Alert.update(
+          {
+            location,
+            trigger_job: 1,
+            trigger_time: new Date().toLocaleString()
+          },
+          { where: { user_id: req.user.dataValues.id, test_send: 1 } }
+        )
+        .then(() => {
+          log.info(
+            `ALERT Controller - SEND - Request ID: ${reqId} - SUCCESSFULLY get a user alert  - ${logData}`
+          );
+
+          //START PREPARING TO SEND MESSAGE
+          const subject = `ALERTHY EMERGENCY TEST: ${msg.subject}`;
+          const message = `${msg.message} sent from ${location} at ${new Date().toLocaleString()}`;
+          
+            //SEND SMS MESSAGE
+          for (let i = 0; i < recipientArray.length; i++) {
+            const recipientPhoneArray = recipientArray[i].recipient_phone.split(',');
+            
+            //SEND EMAIL MESSAGE
+            Email.send(recipientArray[i].recipient_email.split(','), message, subject, reqId, logData);
+            
+            for (let index = 0; index < recipientPhoneArray.length; index++) {
+              Sms.send(recipientPhoneArray[index], message, reqId, logData);
+            }
+          }
+        })
+        .then(() => {
+          const message = 'Alert sent successfully';
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - alert SUCCESSFULLY SENT - ${message} - ${logData}`
+          );
+          return res.status(200).json({
+            status: 'success',
+            message: message
+          });
+        })
+        .catch(error => {
+          log.error(
+            `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+          );
+          return res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+          });
+        });
+      })
+      .catch(error => {
+        log.error(
+          `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+        );
+        return res.status(500).json({
+          error: 'Internal Server Error',
+          message: error.message
+        });
+      });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - SEND - Request ID: ${reqId} - Error in getting an alert for a user - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    });
+  },
+
+
+  /**
+   * @description Stop MAIN user's alert
+   * @access private
+   * @param {Object} req - request
+   * @param {Object} res - response
+   * @returns status code & message
+   */
+  stopMainAlert(req, res) {
+    const handleValidate = validate.body(req, res, schema.sendUpdate);
+    if (handleValidate.statusCode === 422) {
+      return handleValidate;
+    }
+    const reqId = shortid.generate();
+    const logData = JSON.stringify({ ...req.body, ...req.params, ...req.user.dataValues });
+
+    log.info(
+      `ALERT Controller - STOP - Request ID: ${reqId} - Started the process of stopping a user's alert - ${logData}`
+    );
+    models.Alert.update(
+      {
+        trigger_job: 0
+      },
+      { where: { user_id: req.user.dataValues.id, trigger_job_test: 1 } }
+    )
+    .then(result => {
+      if (result[0] === 0) {
+        const message = 'No such main alert';
+        log.error(
+          `Alert Controller - STOP - Request ID: ${reqId} - Error in updating a user's single alert - ${message} - ${logData}`
+        );
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: message,
+          data: []
+        });
+      }
+      const message = 'Main Alert stopped';
+      log.info(
+        `ALERT Controller - STOP - Request ID: ${reqId} - SUCCESSFULLY updated a single user's alert - ${logData}`
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: message
+      });
+    })
+    .catch(error => {
+      log.error(
+        `ALERT Controller - STOP - Request ID: ${reqId} - Error in stopping a single user's alert - ${error.message} - ${logData}`
+      );
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message
+      });
+    });
+  }
 };
 
 module.exports = AlertController;

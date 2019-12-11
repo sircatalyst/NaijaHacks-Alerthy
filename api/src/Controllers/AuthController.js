@@ -210,7 +210,8 @@ const AuthController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         } else {
           const expireTime = Date.now() + 84600;
@@ -354,7 +355,8 @@ const AuthController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         } else {
           delete user.dataValues.password;

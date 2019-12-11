@@ -36,7 +36,8 @@ const UserController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         log.info(
@@ -79,7 +80,8 @@ const UserController = {
           log.info(`User Controller - LIST - Request ID: ${reqId} - Got no user - ${logData}`);
           return res.status(200).json({
             status: 'success',
-            data: message
+            data: message,
+            data: []
           });
         }
         log.info(
@@ -142,7 +144,8 @@ const UserController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         log.info(
@@ -204,7 +207,8 @@ const UserController = {
           );
           return res.status(400).json({
             error: 'Bad Request',
-            message: message
+            message: message,
+            data: []
           });
         }
         models.User.destroy({ where: { id: id } })

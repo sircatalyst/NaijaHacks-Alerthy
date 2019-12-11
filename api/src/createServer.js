@@ -13,6 +13,8 @@ import authRoute from './routes/authRoute';
 import userRoute from './routes/userRoute';
 import alertRoute from './routes/alertRoute';
 import adminRoute from './routes/adminRoute';
+import messageRoute from './routes/messageRoute';
+import recipientRoute from './routes/recipientRoute';
 
 // initialize express
 const app = express();
@@ -48,6 +50,8 @@ const prefix = '/api/v1';
 app.use(`${prefix}/`, authRoute);
 app.use(`${prefix}/users`, userRoute);
 app.use(`${prefix}/alerts`, alertRoute);
+app.use(`${prefix}/messages`, messageRoute);
+app.use(`${prefix}/recipients`, recipientRoute);
 app.use(`${prefix}/ghost`, adminRoute);
 
 // handles non-existing routes
