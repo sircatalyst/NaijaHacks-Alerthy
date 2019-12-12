@@ -1,6 +1,6 @@
 const shortid = require('shortid');
 // const cron = require('cron');
-const models = require('../index');
+const models = require('../models');
 
 // import logger
 const log = require('../utils/log');

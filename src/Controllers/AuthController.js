@@ -7,10 +7,11 @@ const log = require('../utils/log');
 
 const Op = Sequelize.Op;
 
-// import validator schema
 const models = require('../models');
 // import validation function
-const validate = require('../validations');
+const validate = require('../validations/index');
+// import validator schema
+const schema = require('../validations/auth');
 // import email function
 const Email = require('../utils/email');
 

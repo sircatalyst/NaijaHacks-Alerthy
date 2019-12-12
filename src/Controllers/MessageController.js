@@ -1,5 +1,6 @@
 const shortid = require('shortid');
-const models = require('../index');
+// const models = require('../index');
+const models = require('../models');
 
 // import logger
 const log = require('../utils/log');
