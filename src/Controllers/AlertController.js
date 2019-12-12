@@ -1,16 +1,16 @@
-import shortid from 'shortid';
-import models from '../index';
+const shortid = require('shortid');
+const models = require('../index');
 
 // import logger
-import log from '../utils/log';
+const log = require('../utils/log');
 // import sms
-import Sms from '../utils/sms';
+const Sms = require('../utils/sms');
 // import email function
-import Email from '../utils/email';
+const Email = require('../utils/email');
 // import validator schema
-import schema from '../validations/alert';
+const schema = require('../validations/alert');
 // import validation function
-import validate from '../validations';
+const validate = require('../validations');
 
 const AlertController = {
 

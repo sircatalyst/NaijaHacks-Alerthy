@@ -1,6 +1,6 @@
-import app from './createServer';
-import { PORT } from './config/constants';
-import { sequelize } from './models';
+const app = require('./createServer');
+const { PORT } = require('./config/constants');
+const { sequelize } = require('./models');
 
 const port = PORT || 3001;
 // Test DB Connection
@@ -22,4 +22,4 @@ const models = {
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-export default models;
+module.exports = models;

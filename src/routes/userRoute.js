@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import passport from 'passport';
+const { Router } = require('express');
+const passport = require('passport');
 /* eslint import/no-named-as-default "error" */
-import UserController from '../controllers/UserController';
+const UserController = require('../Controllers/UserController');
 
 const router = Router();
 
@@ -13,4 +13,4 @@ router.patch('/:id', passport.authenticate('jwt', { session: false }), UserContr
 
 router.delete('/:id', passport.authenticate('jwt', { session: false }), UserController.delete);
 
-export default router;
+module.exports = router;

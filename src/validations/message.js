@@ -1,4 +1,4 @@
-import Joi from '@hapi/joi';
+const Joi = require('@hapi/joi');
 
 const schema = {
   create: Joi.object({

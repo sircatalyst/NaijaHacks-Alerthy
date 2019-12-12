@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { Strategy, ExtractJwt } from 'passport-jwt';
+const { Strategy, ExtractJwt } = require('passport-jwt');
 /* eslint import/no-named-as-default "error" */
-import models from '../models/index';
+const models = require('../models/index');
 
 const { User } = models;
 
@@ -9,7 +9,7 @@ const opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.JWT_SECRET_KEY;
 
-export default passport => {
+module.exports = passport => {
   passport.use(
     new Strategy(opts, (jwt_payload, done) => {
       User.findOne({ where: { id: jwt_payload.id } })

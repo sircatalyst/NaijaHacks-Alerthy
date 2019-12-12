@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import passport from 'passport';
+const { Router } = require('express');
+const passport = require('passport');
 /* eslint import/no-named-as-default "error" */
-import AlertController from '../Controllers/AlertController';
+const AlertController = require('../Controllers/AlertController');
 
 const router = Router();
 
@@ -40,4 +40,4 @@ router.patch(
 );
 
 
-export default router;
+module.exports = router;

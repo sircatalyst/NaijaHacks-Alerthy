@@ -1,6 +1,6 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 
 dotenv.config();
 const { DB_USER, DB_PASS, DB_NAME, DB_HOST, PORT } = process.env;
 
-export { DB_USER, DB_PASS, DB_NAME, DB_HOST, PORT };
+module.exports = { DB_USER, DB_PASS, DB_NAME, DB_HOST, PORT };

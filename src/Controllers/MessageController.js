@@ -1,13 +1,13 @@
-import shortid from 'shortid';
-import models from '../index';
+const shortid = require('shortid');
+const models = require('../index');
 
 // import logger
-import log from '../utils/log';
+const log = require('../utils/log');
 
 // import validator schema
-import schema from '../validations/message';
+const schema = require('../validations/message');
 // import validation function
-import validate from '../validations';
+const validate = require('../validations');
 
 const MessageController = {
 

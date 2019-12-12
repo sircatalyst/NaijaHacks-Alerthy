@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "scripts": {
+    "start": "node ./src/index.js",
     "dev": "nodemon --exec babel-node ./src/index.js",
     "migration": "./node_modules/.bin/sequelize db:migrate",
     "migration:rollback": "./node_modules/.bin/sequelize db:migrate:undo:all",

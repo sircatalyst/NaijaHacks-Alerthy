@@ -33,6 +33,6 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 // import/prefer-default
-export { sequelize };
+module.exports = { sequelize };
 
 module.exports = db;

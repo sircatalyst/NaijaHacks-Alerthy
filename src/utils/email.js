@@ -1,5 +1,5 @@
-import sgMail from '@sendgrid/mail';
-import log from './log';
+const sgMail = require('@sendgrid/mail');
+const log = require('./log');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 

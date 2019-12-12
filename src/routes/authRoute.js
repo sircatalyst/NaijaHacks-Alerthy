@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import passport from 'passport';
+const { Router } = require('express');
+const passport = require('passport');
 /* eslint import/no-named-as-default "error" */
-import AuthController from '../controllers/AuthController';
+const AuthController = require('../Controllers/AuthController');
 
 const router = Router();
 
@@ -21,4 +21,4 @@ router.get('/verify?:reset', AuthController.verifyForgetPassword);
 
 router.get('/logout', passport.authenticate('jwt', { session: false }), AuthController.logout);
 
-export default router;
+module.exports = router;

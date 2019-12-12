@@ -1,8 +1,7 @@
-import { Router } from 'express';
-import passport from 'passport';
+const { Router } = require('express');
+const passport = require('passport');
 /* eslint import/no-named-as-default "error" */
-import MessageController from '../Controllers/MessageController';
-
+const MessageController = require('../Controllers/MessageController');
 const router = Router();
 
 router.post('/', passport.authenticate('jwt', { session: false }), MessageController.create); 
@@ -24,4 +23,4 @@ router.delete('/main', passport.authenticate('jwt', { session: false }), Message
 router.delete('/:id', passport.authenticate('jwt', { session: false }), MessageController.delete);
 
 
-export default router;
+module.exports = router;

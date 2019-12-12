@@ -1,4 +1,4 @@
-import { DB_USER, DB_PASS, DB_NAME, DB_HOST } from '../config/constants';
+const { DB_USER, DB_PASS, DB_NAME, DB_HOST } = require('../config/constants');
 
 module.exports = {
   development: {

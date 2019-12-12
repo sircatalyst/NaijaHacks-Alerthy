@@ -1,11 +1,13 @@
-import shortid from 'shortid';
-import models from '../index';
-import log from '../utils/log';
+const shortid = require('shortid');
+// const cron = require('cron');
+const models = require('../index');
+
+// import logger
+const log = require('../utils/log');
 
 // import validator schema
-import schema from '../validations/user';
-// import validation function
-import validate from '../validations';
+const schema = require('../validations/user');
+const validate = require('../validations');
 
 const UserController = {
   /**

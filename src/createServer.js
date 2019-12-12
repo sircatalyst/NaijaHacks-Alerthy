@@ -1,20 +1,20 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import logger from 'morgan';
-import cors from 'cors';
-import swaggerUI from 'swagger-ui-express';
-import passport from 'passport';
+const express = require('express');
+const bodyParser = require('body-parser');
+const logger = require('morgan');
+const cors = require('cors');
+const swaggerUI = require('swagger-ui-express');
+const passport = require('passport');
 
-import passportConfig from './config/passport';
-import swaggerDocument from './docs/swagger';
+const passportConfig = require('./config/passport');
+const swaggerDocument = require('./docs/swagger');
 
 // routes
-import authRoute from './routes/authRoute';
-import userRoute from './routes/userRoute';
-import alertRoute from './routes/alertRoute';
-import adminRoute from './routes/adminRoute';
-import messageRoute from './routes/messageRoute';
-import recipientRoute from './routes/recipientRoute';
+const authRoute = require('./routes/authRoute');
+const userRoute = require('./routes/userRoute');
+const alertRoute = require('./routes/alertRoute');
+const adminRoute = require('./routes/adminRoute');
+const messageRoute = require('./routes/messageRoute');
+const recipientRoute = require('./routes/recipientRoute');
 
 // initialize express
 const app = express();
@@ -57,4 +57,4 @@ app.use(`${prefix}/ghost`, adminRoute);
 // handles non-existing routes
 app.all('*', (req, res) => res.status(404).json({ error: 'route not found' }));
 
-export default app;
+module.exports = app;

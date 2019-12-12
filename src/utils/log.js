@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-import { Timber } from '@timberio/node';
+const dotenv = require('dotenv');
+const { Timber } = require('@timberio/node');
 
 dotenv.config();
 const { TIMBER_API_KEY, TIMBER_SOURCE_ID } = process.env;
@@ -19,4 +19,4 @@ const log = new Timber(TIMBER_API_KEY, TIMBER_SOURCE_ID, {
   ignoreExceptions: false
 });
 
-export default log;
+module.exports = log;

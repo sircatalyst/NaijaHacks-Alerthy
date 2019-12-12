@@ -1,19 +1,18 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import shortid from 'shortid';
-import Sequelize from 'sequelize';
-import uuid from 'uuid';
-import models from '../index';
-import log from '../utils/log';
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const shortid = require('shortid');
+const Sequelize = require('sequelize');
+const uuid = require('uuid');
+const log = require('../utils/log');
 
 const Op = Sequelize.Op;
 
 // import validator schema
-import schema from '../validations/auth';
+const models = require('../models');
 // import validation function
-import validate from '../validations';
+const validate = require('../validations');
 // import email function
-import Email from '../utils/email';
+const Email = require('../utils/email');
 
 const AuthController = {
   /**

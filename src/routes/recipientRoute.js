@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import passport from 'passport';
+const { Router } = require('express');
+const passport = require('passport');
 /* eslint import/no-named-as-default "error" */
-import RecipientController from '../Controllers/RecipientController';
+const RecipientController = require('../Controllers/RecipientController');
 
 const router = Router();
 
@@ -15,4 +15,4 @@ router.patch('/:id', passport.authenticate('jwt', { session: false }), Recipient
 
 router.delete('/:id', passport.authenticate('jwt', { session: false }), RecipientController.delete);
 
-export default router;
+module.exports = router;
