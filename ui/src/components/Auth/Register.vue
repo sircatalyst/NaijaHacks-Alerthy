@@ -116,7 +116,7 @@ export default {
         try {
           this.processing = true;
           this.message = null;
-          await this.register({ first_name, last_name, email, phone, password, confirm_password, gender })
+          await this.register({ first_name, last_name, email, phone, password, confirm_password, gender });
           this.$router.push('/dashboard');
         } catch (error) {
           const { message } = error.response.data;

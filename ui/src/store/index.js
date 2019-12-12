@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios';
+import axios from '../lib/axios';
 
 Vue.use(Vuex)
 
@@ -24,15 +24,15 @@ export default new Vuex.Store({
   },
   actions: {
     async register({ commit }, payload) {
-      const { data } = await axios.post('http://localhost:5000/api/v1/register', payload);
+      const { data } = await axios.post('register', payload);
       commit('LOGIN', data);
     },
     async login({ commit }, payload) {
-      const { data } = await axios.post('http://localhost:5000/api/v1/login', payload);
+      const { data } = await axios.post('login', payload);
       commit('LOGIN', data);
     },
     async logout({ commit }) {
-      await axios.get('http://localhost:5000/api/v1/logout');
+      await axios.get('logout');
       commit('LOGOUT');
     },
     isAuthenticated({ getters }) {
