@@ -41,4 +41,3 @@ export default (sequelize, DataTypes) => {
       }
     );
   };
-  
