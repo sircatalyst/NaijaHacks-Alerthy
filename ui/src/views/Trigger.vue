@@ -20,7 +20,7 @@
   </div>
 </template>
 <script async defer 
-  src="https://maps.googleapis.com/maps/api/js?key={GOOGLEKEY}&libraries=places">
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy-d6JBcAFfo7KGC0PgYltltQkEdiMVR8&libraries=places">
 </script>
 <script>
 import { mapActions, mapGetters } from 'vuex';

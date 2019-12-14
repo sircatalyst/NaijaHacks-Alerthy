@@ -1,0 +1,15 @@
+{
+  "name": "Alerthy-UI",
+  "short_name": "Covers",
+  "start_url": "index.html",
+  "display": "standalone",
+  "theme_color": "#0476F2",
+  "background_color": "#fff",
+  "icons": [
+    {
+      "src": "../src/assets/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}
