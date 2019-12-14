@@ -4,7 +4,7 @@ import axios from 'axios';
 // const BASE_URL = process.env.BASE_URL;
 
 const instance = axios.create({
-  baseURL: process.env.BASE_URL,
+  baseURL: process.env.VUE_APP_BASE_URL,
 });
 
 // Add a request interceptor
