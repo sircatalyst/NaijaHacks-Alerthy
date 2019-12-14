@@ -19,9 +19,9 @@
     <h1> Smile! Sending sending </h1>
   </div>
 </template>
-<script async defer 
-  src="https://maps.googleapis.com/maps/api/js?key={GOOGLEKEY}&libraries=places">
-</script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy-d6JBcAFfo7KGC0PgYltltQkEdiMVR8&libraries=places">
+  </script>
 <script>
 import { mapActions, mapGetters } from 'vuex';
 import {  } from 'vuelidate/lib/validators';
@@ -70,7 +70,7 @@ export default {
         this.errorMessage = error.message;
         this.loading = false;
       }, options);
-      
+
     }
     else {
       "Geolocation is not supported by this browser.";
@@ -112,7 +112,7 @@ export default {
   validations: {
     form: {
        location: {
-      
+
       }
     }
   }

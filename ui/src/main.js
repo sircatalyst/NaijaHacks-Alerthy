@@ -7,6 +7,7 @@ import Vuelidate from 'vuelidate'
 
 import 'materialize-css/dist/css/materialize.min.css';
 import 'materialize-css/dist/js/materialize.min.js';
+import './registerServiceWorker'
 
 Vue.prototype.$M = window.M;
 
